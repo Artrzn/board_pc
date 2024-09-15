@@ -54,7 +54,7 @@ unsigned long actualSaveTimestampt;
 const int saveTimeout = 300000;
 struct attribute((__packed)) saveData {
   double fuel;
-  double oddometr;
+  double odometr;
   uint8_t crc;
 };
 saveData data;
@@ -74,10 +74,10 @@ unsigned long actualTimeFromStart, previousTimeFromStart;
 void readSavedDataFromSd() {
   if (readStructFromFile(F("/primary.txt"))) {
     fuelConsumeAccumulator = data.fuel;
-    odometrAcculmulator = data.oddometr;
+    odometrAcculmulator = data.odometr;
   } else if (readStructFromFile(F("/backup.txt"))) {
     fuelConsumeAccumulator = data.fuel;
-    odometrAcculmulator = data.oddometr;
+    odometrAcculmulator = data.odometr;
   }
 }
 
@@ -93,7 +93,7 @@ bool readStructFromFile(String fileName) {
       //-1 отбрасывать при расчетах байт, содержащий хеш сумму
       if (calcCRC8((byte*)&data, sizeof(data) - 1) == data.crc) {
         fuelConsumeAccumulator = data.fuel;
-        odometrAcculmulator = data.oddometr;
+        odometrAcculmulator = data.odometr;
         result = true;
       }
     }
@@ -511,7 +511,7 @@ bool resetSettings() {
 
 void saveDataToSd() {
   data.fuel = fuelConsumeAccumulator;
-  data.oddometr = odometrAcculmulator;
+  data.odometr = odometrAcculmulator;
   data.crc = calcCRC8((byte*)&data, sizeof(data) - 1);
   SD.remove(F("/primary.txt"));
   writeStructToFile(F("/primary.txt"));
