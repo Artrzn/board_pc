@@ -52,7 +52,8 @@ File saveFile;
 unsigned long lastSaveTimestampt;
 unsigned long actualSaveTimestampt;
 const int saveTimeout = 300000;
-struct attribute((__packed)) saveData {
+bool isSaveByFinishDrive = false;
+struct __attribute((__packed__)) saveData {
   double fuel;
   double odometr;
   uint8_t crc;
@@ -240,9 +241,12 @@ void loop() {
     lastSaveTimestampt = millis();
   }
   actualSaveTimestampt = millis();
-  if (actualSaveTimestampt - lastSaveTimestampt > saveTimeout) {
+  if (actualSaveTimestampt - lastSaveTimestampt > saveTimeout || (carSpeed == 0 && isSaveByFinishDrive)) {
     saveDataToSd();
     lastSaveTimestampt = actualSaveTimestampt;
+    if(isSaveByFinishDrive){
+      isSaveByFinishDrive = false;
+    }
   }
   updateSensorsData();
   sensorsDataProcess();
@@ -493,6 +497,8 @@ void sensorsDataProcess() {
       odometrAcculmulator += actualOdometr;
       actualFuelConsume = fuelLitersPerSecond * measurementDuration;
       fuelConsumeAccumulator += actualFuelConsume;
+    } else {
+      isSaveByFinishDrive = true;
     }
   }
 
@@ -703,9 +709,9 @@ void printMenuPage() {
 void printMainPage() {
   u8g2.clearBuffer();
   u8g2.setCursor(8, 26);
-  if (actualTemp <= -10 actualTemp >= 100) {
+  if (actualTemp <= -10 || actualTemp >= 100) {
     u8g2.print(F("Тдв:  "));
-  } else if (actualTemp <= -1 actualTemp >= 10) {
+  } else if (actualTemp <= -1 || actualTemp >= 10) {
     u8g2.print(F("Тдв:   "));
   } else {
     u8g2.print(F("Тдв:    "));
