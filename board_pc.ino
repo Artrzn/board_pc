@@ -52,7 +52,8 @@ File saveFile;
 unsigned long lastSaveTimestampt;
 unsigned long actualSaveTimestampt;
 const int saveTimeout = 300000;
-bool isSaveByFinishDrive = false;
+bool isSaveByFinishDrive;
+bool isCarMovedAfterFinish;
 struct __attribute((__packed__)) saveData {
   double fuel;
   double odometr;
@@ -241,11 +242,12 @@ void loop() {
     lastSaveTimestampt = millis();
   }
   actualSaveTimestampt = millis();
-  if (actualSaveTimestampt - lastSaveTimestampt > saveTimeout || (carSpeed == 0 && isSaveByFinishDrive)) {
+  if (actualSaveTimestampt - lastSaveTimestampt > saveTimeout || (carSpeed == 0 && isSaveByFinishDrive && isCarMovedAfterFinish)) {
     saveDataToSd();
     lastSaveTimestampt = actualSaveTimestampt;
     if(isSaveByFinishDrive){
       isSaveByFinishDrive = false;
+      isCarMovedAfterFinish = false;
     }
   }
   updateSensorsData();
@@ -497,6 +499,7 @@ void sensorsDataProcess() {
       odometrAcculmulator += actualOdometr;
       actualFuelConsume = fuelLitersPerSecond * measurementDuration;
       fuelConsumeAccumulator += actualFuelConsume;
+      isCarMovedAfterFinish = true;
     } else {
       isSaveByFinishDrive = true;
     }
